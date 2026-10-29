@@ -1,7 +1,3 @@
-> [!WARNING]
-> **\*snap\*** Thanos was here. Someone didn't read this README.
-> See [`THANOS_WAS_HERE.md`](THANOS_WAS_HERE.md).
-
 # Assignment 3: Customer Support
 
 > Build a support desk for an online shop, from an empty folder, where you can see every
