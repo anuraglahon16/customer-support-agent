@@ -17,7 +17,7 @@ T = TypeVar("T")
 
 RETRY_CODES = {429, 500, 502, 503, 529}   # "try again later"; 529 = Claude API overloaded
 MAX_ATTEMPTS = 3
-RETRY_BUDGET_S = 8   # no new attempt after 8 s; a hung call is cut by the caller's timeout
+RETRY_BUDGET_S = 6.5  # leave room for one retry before the caller's 15 s A2A timeout
 
 
 async def with_retries(call: Callable[[], Awaitable[T]], log: logging.Logger) -> tuple[T, list[str]]:
