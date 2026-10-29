@@ -15,9 +15,13 @@ from support.models import api_error
 
 T = TypeVar("T")
 
-RETRY_CODES = {429, 500, 502, 503, 529}   # "try again later"; 529 = Claude API overloaded
+RETRY_CODES = {429, 500, 502, 503, 504, 529}   # "try again later"; 529 = Claude API overloaded
 MAX_ATTEMPTS = 3
-RETRY_BUDGET_S = 8   # no new attempt after 8 s; a hung call is cut by the caller's timeout
+RETRY_BUDGET_S = 8      # no new attempt after 8 s
+CALL_DEADLINE_S = 6     # one whole model call, start to finish. The SDK's own timeout bounds
+                        # each read, so a slowly streaming reply outlived the caller's 15 s
+                        # guard timeout with no retry ever starting (eval run 9, M01).
+                        # Worst case: 6 + 0.5 + 6 = 12.5 s, inside the 15 s guard timeout.
 
 
 async def with_retries(call: Callable[[], Awaitable[T]], log: logging.Logger) -> tuple[T, list[str]]:
@@ -27,7 +31,14 @@ async def with_retries(call: Callable[[], Awaitable[T]], log: logging.Logger) ->
     start = time.perf_counter()
     for attempt in range(1, MAX_ATTEMPTS + 1):
         try:
-            return await call(), failed
+            return await asyncio.wait_for(call(), CALL_DEADLINE_S), failed
+        except TimeoutError as exc:   # the whole call ran past its deadline: retryable
+            failed.append(f"attempt {attempt}: model call exceeded {CALL_DEADLINE_S}s")
+            log.warning("model call failed (%s)", failed[-1])
+            if attempt == MAX_ATTEMPTS or time.perf_counter() - start > RETRY_BUDGET_S:
+                raise RuntimeError(f"model unavailable after {attempt} attempt(s): {'; '.join(failed)}") from exc
+            await asyncio.sleep(0.5)
+            continue
         except Exception as exc:
             info = api_error(exc)
             if info is None:
