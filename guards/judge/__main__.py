@@ -87,7 +87,7 @@ what it could not see. Answer with the verdict and one short reason.
 
 agent = LlmAgent(
     name=APP,
-    model=llm(MODEL, max_retries=0),          # no silent SDK retries: ours below are reported
+    model=llm(MODEL, max_retries=0, timeout_s=6),          # no silent SDK retries: ours below are reported
     description="Decides whether a customer message is an attack on the support system.",
     instruction=INSTRUCTION,
     output_schema=Verdict,

@@ -23,15 +23,18 @@ def is_claude(name: str) -> bool:
     return name.startswith("claude-")
 
 
-def llm(name: str, *, max_retries: int | None = None):
+def llm(name: str, *, max_retries: int | None = None, timeout_s: float | None = None):
     """The `model=` value for an LlmAgent. max_retries=0 turns off the SDK's silent
-    retries, for callers that retry themselves and report each attempt (SPEC §16)."""
+    retries, for callers that retry themselves and report each attempt (SPEC §16).
+    timeout_s bounds one call: the SDK default is 10 minutes, so a hung call outlived the
+    pipeline's 15 s guard timeout before the guard's own retry could run (eval run 7)."""
     if not is_claude(name):
         return name
     from anthropic import AsyncAnthropic
     from google.adk.models.anthropic_llm import AnthropicLlm
 
-    client = AsyncAnthropic(max_retries=max_retries) if max_retries is not None else None
+    opts = {k: v for k, v in (("max_retries", max_retries), ("timeout", timeout_s)) if v is not None}
+    client = AsyncAnthropic(**opts) if opts else None
     return AnthropicLlm(model=name, client=client)
 
 

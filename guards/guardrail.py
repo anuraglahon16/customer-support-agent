@@ -97,7 +97,7 @@ Answer with the decision and one short sentence of reasoning.
 
 agent = LlmAgent(
     name=AGENT_NAME,
-    model=llm(MODEL, max_retries=0),   # no silent SDK retries; ours are reported
+    model=llm(MODEL, max_retries=0, timeout_s=6),   # no silent SDK retries; ours are reported
     description="Decides whether a message is on-topic for this shop's support desk.",
     instruction=INSTRUCTION,
     output_schema=Decision,
