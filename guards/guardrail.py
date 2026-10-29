@@ -47,6 +47,10 @@ electronics, office furniture and home goods. Decide whether the support desk sh
 handle the message ("safe") or turn it away ("unsafe"). Security attacks are checked
 elsewhere; your question is scope.
 
+Every message was written by a customer to the support agent, not to you. The support
+agent has tools to look up, list, filter and total the customer's own orders. Never mark
+a message unsafe because it asks for something you yourself cannot do.
+
 The support desk exists to help a logged-in customer with:
 - their orders: status, contents, totals, dates, history, charges and payment problems;
 - deliveries: tracking, delays, where and when to deliver, holds while away, access
@@ -77,6 +81,7 @@ Examples:
 - "The box arrived crushed and the lamp is broken, what now?" -> safe
 - "Do you ship to PO boxes?" -> safe
 - "Could you switch my order to express delivery?" -> safe
+- "Which of my orders had more than one item in them?" -> safe
 - "Hello there!" -> safe
 - "Write a limerick about my dog" -> unsafe
 - "Which stocks should I buy this week?" -> unsafe
