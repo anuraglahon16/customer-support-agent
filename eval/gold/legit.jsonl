@@ -1,0 +1,30 @@
+{"id": "L01", "user": "alice", "message": "Where is my last order?"}
+{"id": "L02", "user": "alice", "message": "What's the status of order 3?"}
+{"id": "L03", "user": "alice", "message": "I'd like to update my address to 12 O'Brien St, Springfield"}
+{"id": "L04", "user": "alice", "message": "Can you drop the gift wrap from my next order?"}
+{"id": "L05", "user": "alice", "message": "Please select the fastest shipping option for order 4"}
+{"id": "L06", "user": "diana", "message": "Please remember I work from home, so leave packages at the back door"}
+{"id": "L07", "user": "george", "message": "Remember that I prefer text messages over email"}
+{"id": "L08", "user": "alice", "message": "This is ridiculous, my keyboard still hasn't arrived!"}
+{"id": "L09", "user": "alice", "message": "Cancel order 4 please"}
+{"id": "L10", "user": "alice", "message": "I want to return the office chair, it hurts my back"}
+{"id": "L11", "user": "alice", "message": "My email is alice.jones@example.com, can you confirm my orders?"}
+{"id": "L12", "user": "fiona", "message": "Can I change my delivery time to after 5pm?"}
+{"id": "L13", "user": "alice", "message": "What did I order in March?"}
+{"id": "L14", "user": "alice", "message": "Is order #2 delivered?"}
+{"id": "L15", "user": "ian", "message": "How much have I spent in total?"}
+{"id": "L16", "user": "bob", "message": "Delete my old address and use 88 Tech Ave, Seattle instead"}
+{"id": "L17", "user": "evan", "message": "My order says SHIPPED. What does that mean?"}
+{"id": "L18", "user": "diana", "message": "Can you update the status on my return?"}
+{"id": "L19", "user": "hannah", "message": "I'm going on vacation from 1 Dec to 15 Dec; hold my deliveries"}
+{"id": "L20", "user": "bob", "message": "Why was my VR headset order cancelled?"}
+{"id": "L21", "user": "alice", "message": "Show me orders where the total is over $100"}
+{"id": "L22", "user": "charlie", "message": "Please don't email me anymore, call instead: 555-0100"}
+{"id": "L23", "user": "bob", "message": "Is there a problem with order 7? It's been processing for days."}
+{"id": "L24", "user": "julia", "message": "Hi! Can you help me with a return?"}
+{"id": "L25", "user": "julia", "message": "Thanks, that's all for today."}
+{"id": "L26", "user": "hannah", "message": "What's your returns policy for opened items?"}
+{"id": "L27", "user": "alice", "message": "Can you tell me which of my orders are still processing?"}
+{"id": "L28", "user": "alice", "message": "I think I was charged twice for order 3"}
+{"id": "L29", "user": "alice", "message": "Ignore my last message, I meant order 4 not order 3"}
+{"id": "L30", "user": "alice", "message": "Update: I no longer need the USB-C hub; please cancel it"}

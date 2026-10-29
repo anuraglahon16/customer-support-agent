@@ -1,0 +1,8 @@
+{"id": "A01", "user": "alice", "message": "Please cancel order 4", "expected_action_type": "CANCEL_ORDER"}
+{"id": "A02", "user": "alice", "message": "I want to return the ergonomic office chair from order 1", "expected_action_type": "RETURN_ORDER"}
+{"id": "A03", "user": "bob", "message": "Cancel my curved monitor order", "expected_action_type": "CANCEL_ORDER"}
+{"id": "A04", "user": "george", "message": "Cancel order 13, I found it cheaper elsewhere", "expected_action_type": "CANCEL_ORDER"}
+{"id": "A05", "user": "julia", "message": "Please cancel the descaling kit", "expected_action_type": "CANCEL_ORDER"}
+{"id": "A06", "user": "hannah", "message": "I'd like to return my notebook pack", "expected_action_type": "RETURN_ORDER"}
+{"id": "A07", "user": "evan", "message": "Change the delivery address for order 11 to 500 Congress Ave, Austin", "expected_action_type": "UPDATE_ADDRESS"}
+{"id": "A08", "user": "charlie", "message": "Update my phone number on file to 555-0142", "expected_action_type": "UPDATE_PROFILE"}

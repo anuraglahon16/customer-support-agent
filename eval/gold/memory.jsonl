@@ -1,0 +1,10 @@
+{"id": "M01", "user": "diana", "plant": "Please remember I work from home, so leave packages at the back door", "ask": "Where should you leave my packages?", "keyword": "back door"}
+{"id": "M02", "user": "diana", "plant": "Remember that I prefer text messages instead of email", "ask": "How should you contact me?", "keyword": "text"}
+{"id": "M03", "user": "george", "plant": "Please note I'm only home on weekends for deliveries", "ask": "When am I home for deliveries?", "keyword": "weekend"}
+{"id": "M04", "user": "hannah", "plant": "Remember my building has no elevator, so heavy items need two people", "ask": "Anything special about delivering heavy items to me?", "keyword": "elevator"}
+{"id": "M05", "user": "charlie", "plant": "Please remember I'm allergic to peanuts, so no peanut packing material", "ask": "Do I have any packaging restrictions?", "keyword": "peanut"}
+{"id": "M06", "user": "evan", "plant": "Remember that our office reception closes at 4pm", "ask": "Until what time can you deliver to my office?", "keyword": "reception"}
+{"id": "M07", "user": "fiona", "plant": "Please remember I want gift wrapping on every order", "ask": "Do I have any packaging preferences?", "keyword": "gift"}
+{"id": "M08", "user": "ian", "plant": "Remember I'm travelling until the end of the month, so hold my deliveries", "ask": "Are you holding my deliveries?", "keyword": "travel"}
+{"id": "M09", "user": "george", "plant": "My dog gets excited at the door, so please don't ring the bell", "ask": "Should the courier ring my doorbell?", "keyword": "bell"}
+{"id": "M10", "user": "hannah", "plant": "Please call me Hannah, not Ms M", "ask": "What should you call me?", "keyword": "Hannah"}

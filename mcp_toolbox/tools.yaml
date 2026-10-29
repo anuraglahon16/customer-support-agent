@@ -1,0 +1,134 @@
+# MCP Toolbox for Databases config (Toolbox v1.x multi-document format).
+#
+# Access control lives HERE, in each statement's WHERE clause, not in the agent's prompt
+# (M-4, R-1). The customer email in every tool is meant to be bound by the application
+# from the logged-in session with toolbox-core (M-5), so it is never a value the model picks.
+#
+# No tool in this file can UPDATE or DELETE customer_orders (M-6, R-3); the `toolbox`
+# database role has no such privilege either (db/seed.sql).
+
+kind: source
+name: shop-db
+type: postgres
+host: 127.0.0.1
+port: ${POSTGRES_PORT}
+database: ${POSTGRES_DB}
+user: ${TOOLBOX_DB_USER}
+password: ${TOOLBOX_DB_PASSWORD}
+---
+kind: tool
+name: get-order-status
+type: postgres-sql
+source: shop-db
+description: |
+  Look up one order on the logged-in customer's account by its order id. Returns the
+  order's status, items, date, total and delivery address. Returns no rows if the order
+  does not exist OR belongs to someone else; in both cases tell the customer you can't
+  find that order on their account.
+statement: |
+  SELECT order_id, status, items, order_date, total_amount, delivery_address
+  FROM customer_orders
+  WHERE order_id = $1 AND customer_email = $2
+parameters:
+  - name: order_id
+    type: integer
+    description: The numeric order id the customer asked about, e.g. 3.
+    minValue: 1
+  - name: customer_email
+    type: string
+    description: The logged-in customer's email. Bound by the application from the session; never supplied by the model.
+---
+kind: tool
+name: find-customer-orders
+type: postgres-sql
+source: shop-db
+description: |
+  List the logged-in customer's orders, newest first. Use for "my last order", "my order
+  history", or to find an order by product name ("my monitor order").
+statement: |
+  SELECT order_id, status, items, order_date, total_amount, delivery_address
+  FROM customer_orders
+  WHERE customer_email = $1
+  ORDER BY order_date DESC, order_id DESC
+  LIMIT 20
+parameters:
+  - name: customer_email
+    type: string
+    description: The logged-in customer's email. Bound by the application from the session; never supplied by the model.
+---
+kind: tool
+name: action-log
+type: postgres-sql
+source: shop-db
+description: |
+  Record a change the customer has explicitly requested, for a person to act on later.
+  This does NOT change the order; tell the customer the request was logged. Only call it
+  when the request clearly identifies what to change; if it is ambiguous, ask first.
+  Returns the logged row. Returns NO rows if the request was rejected: the order_id is not
+  on this customer's account, or CANCEL_ORDER / RETURN_ORDER was sent without an order_id.
+# INSERT … SELECT … WHERE: the row is written only if the referenced order belongs to the
+# session's email (M-8). Order-level actions must name an order.
+# Every $n is cast explicitly: $1 is used both as a value and in a comparison, and without
+# the cast Postgres deduces two types for it and rejects the statement (SQLSTATE 42P08).
+statement: |
+  INSERT INTO actions_log (user_email, action_type, parameters)
+  SELECT $1::text, $2::text, $3::jsonb
+  WHERE
+    CASE
+      WHEN ($3::jsonb ->> 'order_id') IS NOT NULL THEN
+        ($3::jsonb ->> 'order_id') ~ '^[0-9]+$'
+        AND EXISTS (
+          SELECT 1 FROM customer_orders
+          WHERE order_id = ($3::jsonb ->> 'order_id')::int AND customer_email = $1::text)
+      ELSE $2::text NOT IN ('CANCEL_ORDER', 'RETURN_ORDER')
+    END
+  RETURNING id, timestamp, action_type, parameters
+parameters:
+  - name: user_email
+    type: string
+    description: The logged-in customer's email. Bound by the application from the session; never supplied by the model.
+  - name: action_type
+    type: string
+    description: |
+      Exactly one of CANCEL_ORDER, RETURN_ORDER, UPDATE_ADDRESS, UPDATE_PREFERENCE,
+      UPDATE_PROFILE. No other value is accepted.
+    allowedValues: ["^CANCEL_ORDER$", "^RETURN_ORDER$", "^UPDATE_ADDRESS$", "^UPDATE_PREFERENCE$", "^UPDATE_PROFILE$"]
+  - name: parameters
+    type: string
+    description: |
+      A JSON object describing the request. Include "order_id" (a number) whenever an
+      order is involved, plus any details, e.g. {"order_id": 4, "reason": "no longer needed"}
+      or {"new_address": "1 Main St, Springfield"}.
+---
+# Login check for the CLI and web app (no SQL in Python, M-2). It lives in the `auth`
+# toolset below, which the support agent never loads. Plain-text passwords are a demo
+# seed only (SPEC §8); the point here is authorization in the tools, not login.
+kind: tool
+name: verify-login
+type: postgres-sql
+source: shop-db
+description: Return the user's public profile if the email and password match, else no rows.
+statement: |
+  SELECT email, full_name, is_premium_customer
+  FROM users
+  WHERE email = $1 AND password = $2
+parameters:
+  - name: email
+    type: string
+    description: Login email.
+  - name: password
+    type: string
+    description: Login password.
+---
+kind: toolset
+name: auth
+tools:
+  - verify-login
+---
+# The only toolset the support agent loads: two reads and one append-only log.
+kind: toolset
+name: support-agent
+tools:
+  - get-order-status
+  - find-customer-orders
+  - action-log

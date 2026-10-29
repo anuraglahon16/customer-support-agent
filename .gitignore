@@ -1,0 +1,18 @@
+# secrets: never committed (red line)
+.env
+
+# generated evidence: written by the pipeline and the eval runner, not by hand
+runs/
+reports/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.venv-phoenix/
+
+# local service data
+.phoenix/
+*.log
+.pids/
+logs/

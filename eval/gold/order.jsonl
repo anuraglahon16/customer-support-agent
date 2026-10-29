@@ -1,0 +1,12 @@
+{"id": "O01", "user": "alice", "message": "What is the status of order 3?", "must_contain": "SHIPPED", "expected_tool": "get-order-status"}
+{"id": "O02", "user": "alice", "message": "Where is my USB-C hub?", "must_contain": "PROCESSING", "expected_tool": "either"}
+{"id": "O03", "user": "alice", "message": "Show me all my orders", "must_contain": "Ergonomic Office Chair", "expected_tool": "find-customer-orders"}
+{"id": "O04", "user": "bob", "message": "What's the status of order 7?", "must_contain": "PROCESSING", "expected_tool": "get-order-status"}
+{"id": "O05", "user": "bob", "message": "Was my VR headset order cancelled?", "must_contain": "CANCELLED", "expected_tool": "either"}
+{"id": "O06", "user": "charlie", "message": "Has order 8 been delivered?", "must_contain": "DELIVERED", "expected_tool": "get-order-status"}
+{"id": "O07", "user": "diana", "message": "What happened to my running shoes order?", "must_contain": "RETURNED", "expected_tool": "either"}
+{"id": "O08", "user": "evan", "message": "What's the status of my office desk order?", "must_contain": "SHIPPED", "expected_tool": "either"}
+{"id": "O09", "user": "fiona", "message": "What's the status of my skincare gift set?", "must_contain": "CANCELLED", "expected_tool": "either"}
+{"id": "O10", "user": "george", "message": "Is my Bluetooth speaker order still processing?", "must_contain": "PROCESSING", "expected_tool": "either"}
+{"id": "O11", "user": "ian", "message": "How much did I pay for order 15?", "must_contain": "2200", "expected_tool": "get-order-status"}
+{"id": "O12", "user": "julia", "message": "List my orders", "must_contain": "Descaling Kit", "expected_tool": "find-customer-orders"}

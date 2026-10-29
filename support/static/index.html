@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Support Desk</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --panel: #ffffff; --ink: #1c2330; --muted: #5d6676; --line: #e1e5eb;
+    --accent: #2f5bd3; --accent-ink: #ffffff; --user: #2f5bd3; --user-ink: #ffffff; --bot: #eef1f5;
+    --ok: #1d7a46; --ok-bg: #e3f4ea; --bad: #b42318; --bad-bg: #fde8e6; --run: #8a6100; --run-bg: #fff4d6;
+    --idle: #9aa3b2; --code: #f3f5f8;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #11151c; --panel: #181d26; --ink: #e6e9ef; --muted: #98a2b3; --line: #2a313d;
+      --accent: #6d8ff0; --accent-ink: #0d1117; --user: #3d63d6; --user-ink: #ffffff; --bot: #222936;
+      --ok: #5fd08e; --ok-bg: #173325; --bad: #ff8a7f; --bad-bg: #3a1c1a; --run: #f0c060; --run-bg: #3a3017;
+      --idle: #5b6474; --code: #10141b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #11151c; --panel: #181d26; --ink: #e6e9ef; --muted: #98a2b3; --line: #2a313d;
+    --accent: #6d8ff0; --accent-ink: #0d1117; --user: #3d63d6; --user-ink: #ffffff; --bot: #222936;
+    --ok: #5fd08e; --ok-bg: #173325; --bad: #ff8a7f; --bad-bg: #3a1c1a; --run: #f0c060; --run-bg: #3a3017;
+    --idle: #5b6474; --code: #10141b;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { background: var(--bg); color: var(--ink); font: 15px/1.45 var(--sans); }
+  header { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--panel); }
+  header h1 { font-size: 16px; margin: 0; flex: 1; }
+  header .who { color: var(--muted); font-size: 13px; }
+  button { font: inherit; border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 8px; padding: 7px 12px; cursor: pointer; }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  button:disabled { opacity: .55; cursor: default; }
+  input { font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; width: 100%; }
+  input:focus, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  #login { max-width: 360px; margin: 10vh auto; padding: 24px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+  #login h2 { margin: 0 0 4px; font-size: 18px; }
+  #login p { margin: 0 0 16px; color: var(--muted); font-size: 13px; }
+  #login label { display: block; font-size: 13px; color: var(--muted); margin: 10px 0 4px; }
+  #login .err { color: var(--bad); font-size: 13px; min-height: 18px; margin-top: 8px; }
+
+  #app { display: none; height: calc(100% - 49px); grid-template-columns: minmax(0, 1fr) minmax(320px, 440px); }
+  #chat { display: flex; flex-direction: column; min-width: 0; border-right: 1px solid var(--line); }
+  #messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .msg { max-width: 78%; padding: 9px 13px; border-radius: 12px; white-space: pre-wrap; word-wrap: break-word; }
+  .msg.user { align-self: flex-end; background: var(--user); color: var(--user-ink); border-bottom-right-radius: 4px; }
+  .msg.bot { align-self: flex-start; background: var(--bot); border-bottom-left-radius: 4px; }
+  .msg.bot.blocked { background: var(--bad-bg); }
+  .msg.bot.error { background: var(--bad-bg); color: var(--bad); }
+  .msg .meta { display: block; font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .msg.pending { color: var(--muted); font-style: italic; }
+  form#send { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--line); background: var(--panel); }
+
+  #rail { overflow-y: auto; padding: 14px 16px; background: var(--panel); min-width: 0; }
+  #rail h3 { font-size: 12px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+  .pipe { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-bottom: 12px; }
+  .chip { font-size: 12px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+  .chip.running { background: var(--run-bg); color: var(--run); border-color: transparent; }
+  .chip.passed { background: var(--ok-bg); color: var(--ok); border-color: transparent; }
+  .chip.blocked, .chip.error { background: var(--bad-bg); color: var(--bad); border-color: transparent; font-weight: 600; }
+  .arrow { color: var(--idle); font-size: 11px; }
+  #trace { font-size: 13px; margin-bottom: 10px; word-break: break-all; }
+  #trace a { color: var(--accent); }
+  .step { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; margin-bottom: 8px; }
+  .step .top { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+  .step .name { font-weight: 600; }
+  .pill { font-size: 11px; padding: 1px 7px; border-radius: 999px; }
+  .pill.passed { background: var(--ok-bg); color: var(--ok); }
+  .pill.blocked, .pill.error, .pill.failed { background: var(--bad-bg); color: var(--bad); }
+  .pill.running { background: var(--run-bg); color: var(--run); }
+  .step .ms { margin-left: auto; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .step .span { font: 12px var(--mono); color: var(--muted); }
+  .step .detail { font-size: 13px; margin-top: 3px; }
+  .sub { margin: 6px 0 0 4px; padding-left: 8px; border-left: 2px solid var(--line); }
+  .llm { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .tool { margin-top: 6px; font-size: 13px; }
+  .tool code, pre { font: 12px/1.4 var(--mono); }
+  pre { background: var(--code); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; margin: 4px 0; white-space: pre-wrap; word-break: break-word; }
+  .bound { color: var(--accent); }
+  table { border-collapse: collapse; font-size: 12px; margin-top: 4px; display: block; overflow-x: auto; max-width: 100%; }
+  th, td { border: 1px solid var(--line); padding: 3px 6px; text-align: left; vertical-align: top; white-space: nowrap; }
+  th { background: var(--code); }
+  .mem { font-size: 13px; margin-top: 3px; }
+  .mem .score { font: 12px var(--mono); }
+  .mem.skip { color: var(--muted); }
+  .empty { color: var(--muted); font-size: 13px; }
+
+  @media (max-width: 760px) {
+    #app { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) minmax(0, 45%); }
+    #chat { border-right: none; border-bottom: 1px solid var(--line); }
+    .msg { max-width: 92%; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Support Desk</h1>
+  <span class="who" id="who"></span>
+  <button id="logout" hidden>Log out</button>
+</header>
+
+<form id="login" autocomplete="on">
+  <h2>Sign in</h2>
+  <p>Demo accounts: e.g. alice.jones@example.com / alice</p>
+  <label for="email">Email</label>
+  <input id="email" type="email" autocomplete="username" required>
+  <label for="password">Password</label>
+  <input id="password" type="password" autocomplete="current-password" required>
+  <div class="err" id="loginErr" role="alert"></div>
+  <button class="primary" type="submit" style="width:100%;margin-top:6px">Sign in</button>
+</form>
+
+<main id="app">
+  <section id="chat" aria-label="Conversation">
+    <div id="messages" aria-live="polite"></div>
+    <form id="send">
+      <input id="text" autocomplete="off" placeholder="Ask about an order, a delivery, a return…" aria-label="Message">
+      <button class="primary" id="sendBtn" type="submit">Send</button>
+    </form>
+  </section>
+  <aside id="rail" aria-label="What the system did">
+    <h3>Pipeline</h3>
+    <div class="pipe" id="pipe"></div>
+    <div id="trace"></div>
+    <h3>Steps</h3>
+    <div id="steps"><p class="empty">Send a message to see every step as it happens.</p></div>
+  </aside>
+</main>
+
+<script>
+const KEYS = ["sanitize", "judge", "guardrail", "recall", "agent", "mask", "save"];
+const $ = (id) => document.getElementById(id);
+let userId = null;
+
+function el(tag, attrs = {}, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") n.className = v; else if (k === "text") n.textContent = v; else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+}
+const fmtMs = (ms) => `${Number(ms).toLocaleString("en-US").replace(/,/g, " ")} ms`;
+
+function drawPipe(states = {}) {
+  const pipe = $("pipe"); pipe.replaceChildren();
+  KEYS.forEach((k, i) => {
+    if (i) pipe.append(el("span", { class: "arrow", text: "→" }));
+    pipe.append(el("span", { class: `chip ${states[k] || ""}`, id: `chip-${k}`, text: k }));
+  });
+}
+const setChip = (k, s) => { const c = $(`chip-${k}`); if (c) c.className = `chip ${s}`; };
+
+function addMsg(kind, text) {
+  const m = el("div", { class: `msg ${kind}`, text });
+  $("messages").append(m); m.scrollIntoView({ block: "end" });
+  return m;
+}
+
+// SQL with the model's values filled in; the session-bound email shown as bound (§7.1)
+function fillSql(info, args) {
+  const frag = document.createDocumentFragment();
+  const stmt = info.statement || "";
+  const params = info.params || [], bound = new Set(info.bound || []);
+  const parts = stmt.split(/(\$\d+)/);
+  for (const p of parts) {
+    const m = /^\$(\d+)$/.exec(p);
+    if (!m) { frag.append(p); continue; }
+    const name = params[Number(m[1]) - 1];
+    if (bound.has(name)) { frag.append(el("span", { class: "bound", text: "⟨bound: session email⟩" })); continue; }
+    let v = args[name];
+    frag.append(typeof v === "string" ? `'${v}'` : (v && typeof v === "object") ? `'${JSON.stringify(v)}'` : String(v));
+  }
+  return frag;
+}
+
+// tool results as a table, not a JSON string (W-4)
+function resultTable(rows) {
+  if (!rows || !rows.length) return el("div", { class: "empty", text: "0 rows" });
+  const cols = [...new Set(rows.flatMap((r) => Object.keys(r)))];
+  const cellText = (v) => (v && typeof v === "object")
+    ? (Array.isArray(v) ? v.map((x) => (x && x.product) ? `${x.qty}× ${x.product}` : JSON.stringify(x)).join(", ") : JSON.stringify(v))
+    : String(v ?? "");
+  return el("table", {},
+    el("thead", {}, el("tr", {}, ...cols.map((c) => el("th", { text: c })))),
+    el("tbody", {}, ...rows.map((r) => el("tr", {}, ...cols.map((c) => el("td", { text: cellText(r[c]) }))))));
+}
+
+function stepCard(key, label) {
+  const card = el("div", { class: "step", id: `step-${key}` },
+    el("div", { class: "top" },
+      el("span", { class: "name", text: label }),
+      el("span", { class: "pill running", text: "running" }),
+      el("span", { class: "ms" })),
+    el("div", { class: "span" }), el("div", { class: "detail" }), el("div", { class: "sub" }));
+  $("steps").append(card); card.scrollIntoView({ block: "nearest" });
+  return card;
+}
+
+function handle(ev, ui) {
+  switch (ev.type) {
+    case "trace":
+      $("trace").replaceChildren("Trace ", el("a", { href: ev.url || "#", target: "_blank", rel: "noopener", text: ev.trace_id.slice(0, 12) + "…" }),
+        el("span", { class: "span", text: ` · ${ev.turn_id}` }));
+      break;
+    case "stage":
+      setChip(ev.key, "running");
+      ui.cards[ev.key] = stepCard(ev.key, ev.label);
+      break;
+    case "step": {
+      setChip(ev.key, ev.status);
+      const c = ui.cards[ev.key] || stepCard(ev.key, ev.key);
+      const pill = c.querySelector(".pill"); pill.className = `pill ${ev.status}`; pill.textContent = ev.status;
+      c.querySelector(".ms").textContent = fmtMs(ev.ms);
+      c.querySelector(".span").textContent = `${ev.span} · ${ev.kind}`;
+      c.querySelector(".detail").textContent = ev.detail || "";
+      for (const m of ev.memories || []) {
+        c.querySelector(".sub").append(el("div", { class: `mem ${m.inserted ? "" : "skip"}` },
+          el("span", { class: "score", text: `${m.inserted ? "✓" : "✗"} ${m.score.toFixed(2)} ` }),
+          `“${m.memory}”`, m.reason ? ` (${m.reason})` : ""));
+      }
+      break;
+    }
+    case "llm":
+      (ui.cards.agent?.querySelector(".sub") || $("steps")).append(el("div", { class: "llm",
+        text: `${ev.model} → ${ev.decision} · ${ev.tokens_in} in / ${ev.tokens_out} out · ${fmtMs(ev.ms)} · ${ev.span}` }));
+      break;
+    case "tool_call": {
+      const info = ev.info || {};
+      const box = el("div", { class: "tool", id: `tool-${ev.id}` },
+        el("div", {}, el("code", { text: `${ev.name}(${Object.entries(ev.args).map(([k, v]) => `${k}=${JSON.stringify(v)}`).join(", ")})` }),
+          el("span", { class: "span", text: ` · ${info.kind || "MCP"} ${info.access || ""} · ${ev.span}` })),
+        el("pre", {}, fillSql(info, ev.args)));
+      (ui.cards.agent?.querySelector(".sub") || $("steps")).append(box);
+      break;
+    }
+    case "tool_result": {
+      const box = $(`tool-${ev.id}`) || $("steps");
+      box.append(el("div", { class: "span", text: `${ev.ok ? "ok" : "FAILED"} · ${fmtMs(ev.ms)}${ev.error ? " · " + ev.error : ""}` }),
+        ev.ok ? resultTable(ev.result) : null);
+      break;
+    }
+    case "final":
+      ui.reply.classList.remove("pending");
+      ui.reply.classList.toggle("blocked", ev.blocked);
+      ui.reply.textContent = ev.response;
+      ui.reply.append(el("span", { class: "meta",
+        text: `${ev.terminated}${ev.blocked ? " at " + ev.blocked_at : ""} · ${fmtMs(ev.wall_clock_ms)} · ${ev.tokens.in} in / ${ev.tokens.out} out` }));
+      break;
+    case "error": {
+      setChip(ev.step, "error");
+      const c = ui.cards[ev.step] || stepCard(ev.step, ev.step);
+      const pill = c.querySelector(".pill"); pill.className = "pill error"; pill.textContent = "error";
+      c.querySelector(".detail").textContent = ev.error;
+      ui.reply.classList.remove("pending"); ui.reply.classList.add("error");
+      ui.reply.textContent = `No answer: the ${ev.step} step failed (${ev.status}). ${ev.error}`;
+      break;
+    }
+  }
+}
+
+async function send(text) {
+  addMsg("user", text);
+  const ui = { cards: {}, reply: addMsg("bot pending", "Working…") };
+  $("steps").replaceChildren(); $("trace").replaceChildren(); drawPipe();
+  $("sendBtn").disabled = true;
+  try {
+    const res = await fetch("/api/chat", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ user_id: userId, message: text }) });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      ui.reply.className = "msg bot error"; ui.reply.textContent = `${res.status}: ${body.error || res.statusText}`;
+      if (res.status === 401) logout();
+      return;
+    }
+    // render each event as it arrives, not after the reply (W-3)
+    const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = "";
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let nl;
+      while ((nl = buf.indexOf("\n")) >= 0) {
+        const line = buf.slice(0, nl).trim(); buf = buf.slice(nl + 1);
+        if (line) handle(JSON.parse(line), ui);
+      }
+    }
+  } catch (e) {
+    ui.reply.className = "msg bot error"; ui.reply.textContent = `Connection error: ${e.message}`;
+  } finally {
+    $("sendBtn").disabled = false; $("text").focus();
+  }
+}
+
+function showApp(profile) {
+  userId = profile.user_id;
+  $("login").style.display = "none"; $("app").style.display = "grid";
+  $("who").textContent = `${profile.full_name}${profile.is_premium ? " · premium" : ""}`;
+  $("logout").hidden = false; drawPipe(); $("text").focus();
+}
+
+async function logout() {
+  if (userId) await fetch("/api/logout", { method: "POST", headers: { "content-type": "application/json" },
+    body: JSON.stringify({ user_id: userId }) }).catch(() => {});
+  userId = null; $("app").style.display = "none"; $("login").style.display = "block";
+  $("logout").hidden = true; $("who").textContent = ""; $("messages").replaceChildren();
+}
+
+$("login").addEventListener("submit", async (e) => {
+  e.preventDefault(); $("loginErr").textContent = "";
+  const res = await fetch("/api/login", { method: "POST", headers: { "content-type": "application/json" },
+    body: JSON.stringify({ email: $("email").value.trim(), password: $("password").value }) });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) { $("loginErr").textContent = body.error || `Sign-in failed (${res.status})`; return; }
+  $("password").value = ""; showApp(body);
+});
+$("send").addEventListener("submit", (e) => {
+  e.preventDefault(); const t = $("text").value.trim(); if (!t) return;
+  $("text").value = ""; send(t);
+});
+$("logout").addEventListener("click", logout);
+</script>
+</body>
+</html>
