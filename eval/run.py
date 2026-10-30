@@ -209,6 +209,27 @@ def judge_pass(op: str, value, target) -> bool:
 
 # ── main ──────────────────────────────────────────────────────────────────────
 
+async def wait_until_mem0_empty(memory, limit_s: int = 180) -> None:
+    """Mem0 deletes asynchronously ("Delete in progress"). A fixed sleep wasn't enough: in eval
+    run 13, started right after run 12, the still-running delete wiped all seven round-1
+    plants. Wait until every user really has zero memories, then a margin for the queue."""
+    deadline = time.monotonic() + limit_s
+    while True:
+        counts = []
+        for email in USERS.values():
+            got = await memory._mem0().get_all(filters={"user_id": email})
+            rows = got.get("results", got) if isinstance(got, dict) else got
+            counts.append(len(rows or []))
+        if not any(counts):
+            log("Mem0 empty for every user")
+            await asyncio.sleep(15)
+            return
+        if time.monotonic() > deadline:
+            raise RuntimeError(f"Mem0 still holds {sum(counts)} memories after {limit_s}s; can't start from a known state")
+        log(f"waiting for Mem0 deletes to finish ({sum(counts)} memories left)")
+        await asyncio.sleep(10)
+
+
 async def run_sets(driver: Driver) -> tuple[list[dict], dict]:
     memory_pairs = load("memory")
     by_user: dict[str, list[dict]] = defaultdict(list)
@@ -221,7 +242,7 @@ async def run_sets(driver: Driver) -> tuple[list[dict], dict]:
     before = orders_snapshot()
     from support import memory
     await asyncio.gather(*(memory.clear(e) for e in USERS.values()))
-    await asyncio.sleep(10)                                   # Mem0 deletes asynchronously
+    await wait_until_mem0_empty(memory)
 
     results: list[dict] = []
     for n, pairs in enumerate(rounds, 1):

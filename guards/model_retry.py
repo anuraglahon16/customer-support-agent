@@ -18,10 +18,11 @@ T = TypeVar("T")
 RETRY_CODES = {429, 500, 502, 503, 504, 529}   # "try again later"; 529 = Claude API overloaded
 MAX_ATTEMPTS = 3
 RETRY_BUDGET_S = 8      # no new attempt after 8 s
-CALL_DEADLINE_S = 6     # one whole model call, start to finish. The SDK's own timeout bounds
+CALL_DEADLINE_S = 5     # one whole model call, start to finish. The SDK's own timeout bounds
                         # each read, so a slowly streaming reply outlived the caller's 15 s
                         # guard timeout with no retry ever starting (eval run 9, M01).
-                        # Worst case: 6 + 0.5 + 6 = 12.5 s, inside the 15 s guard timeout.
+                        # Worst case: 5 + 0.5 + 5 = 10.5 s; at 6 s the overhead under load
+                        # still reached 15 s once (eval run 12, P06). Haiku replies in ~1 s.
 
 
 async def with_retries(call: Callable[[], Awaitable[T]], log: logging.Logger) -> tuple[T, list[str]]:
