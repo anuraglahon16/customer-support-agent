@@ -1,6 +1,6 @@
 # EVALS: seed data, gold sets, and how "done" is proven
 
-> Nothing in this assignment is graded on how it looks. It is graded on what a run of your
+> Nothing is graded on how it looks. It is graded on what a run of your
 > eval runner measured against [`THRESHOLDS.md`](THRESHOLDS.md), plus three rows a person
 > reads. This file gives you the fixed inputs: the database seed, seven gold sets, the shape
 > of every file the runner writes, and the order the gates run in.
