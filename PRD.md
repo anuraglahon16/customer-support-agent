@@ -1,6 +1,6 @@
 # Customer Support: a multi-agent support desk you can see inside
 
-*Assignment 3 · FDE Agent Engineering Bootcamp, cohort 2026-03 · Module 4, due end of Week 5 · Owner: Hamza Farooq*
+
 
 > **Read this one.** It is the product and the lesson, in about fifteen minutes. The
 > exhaustive version, with every event, span name and failure mode, is [`SPEC.md`](SPEC.md),
