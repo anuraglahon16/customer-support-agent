@@ -1,4 +1,4 @@
-# Assignment 3: Customer Support
+# Customer Support
 
 > Build a support desk for an online shop, from an empty folder, where you can see every
 > decision the system makes. The hard part isn't the chatbot. It's the guards around it,
